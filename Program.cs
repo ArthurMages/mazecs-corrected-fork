@@ -18,6 +18,21 @@ const int offsetX = 0;
 const int marginYMessage = 3;
 const int messageHeight = 5;
 
+const string sHeader = """
+    ╔══════════════════════════════════════════════════╗
+    ║          🏃 LABYRINTHE ASCII  C#  🏃             ║
+    ╚══════════════════════════════════════════════════╝
+    """;
+const string sInstructions = "  [Z/↑] Haut   [S/↓] Bas   [Q/←] Gauche   [D/→] Droite   [Échap] Quitter";
+const string sWin = """
+    ╔════════════════════════════════╗
+    ║   🎉  FÉLICITATIONS !  🎉      ║
+    ║   Vous avez trouvé la sortie ! ║
+    ╚════════════════════════════════╝
+""";
+const string sCanceled = "\n  Partie abandonnée. À bientôt !";
+const string sPressKey = "  Appuyez sur une key pour quitter...";
+
 // ── Génération du labyrinthe par « recursive backtracker » ──
 const int cellW = width / 2;   // 25
 const int cellH = height / 2;   // 10
@@ -89,9 +104,7 @@ Console.CursorVisible = false;
 
 Console.SetCursorPosition(0, 0);
 Console.ForegroundColor = ConsoleColor.Cyan;
-Console.WriteLine("╔══════════════════════════════════════════════════╗");
-Console.WriteLine("║          🏃 LABYRINTHE ASCII  C#  🏃             ║");
-Console.WriteLine("╚══════════════════════════════════════════════════╝");
+Console.WriteLine(sHeader);
 Console.ResetColor();
 
 for (var y = 0; y < height; y++)
@@ -109,7 +122,7 @@ for (var y = 0; y < height; y++)
 
 Console.SetCursorPosition(0, offsetY + height + 1);
 Console.ForegroundColor = ConsoleColor.DarkCyan;
-Console.Write("  [Z/↑] Haut   [S/↓] Bas   [Q/←] Gauche   [D/→] Droite   [Échap] Quitter");
+Console.Write(sInstructions);
 Console.ResetColor();
 
 // ── Action locale : redessiner UNE seule cellule via SetCursorPosition ──
@@ -161,21 +174,18 @@ Console.SetCursorPosition(0, offsetY + height + marginYMessage);
 if (won)
 {
     Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("  ╔════════════════════════════════╗");
-    Console.WriteLine("  ║   🎉  FÉLICITATIONS !  🎉      ║");
-    Console.WriteLine("  ║   Vous avez trouvé la sortie ! ║");
-    Console.WriteLine("  ╚════════════════════════════════╝");
+    Console.WriteLine(sWin);
     Console.ResetColor();
 }
 else
 {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("\n  Partie abandonnée. À bientôt !");
+    Console.WriteLine(sCanceled);
     Console.ResetColor();
 }
 
 Console.SetCursorPosition(0, offsetY + height + marginYMessage + messageHeight);
-Console.WriteLine("  Appuyez sur une key pour quitter...");
+Console.WriteLine(sPressKey);
 Console.CursorVisible = true;
 Console.ReadKey(true);
 
