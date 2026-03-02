@@ -1,13 +1,4 @@
-﻿// ============================================================
-//  LABYRINTHE ASCII - C# Console
-//  Tableau : int[50, 20]  (width=50, height=20)
-//  0 = couloir   1 = mur   2 = joueur   3 = sortie
-//  Déplacement : Z/Q/S/D ou flèches
-//  ✅ Optimisé : seules les cellules modifiées sont redessinées
-//               via Console.SetCursorPosition()
-// ============================================================
-
-var grid = new CellType[50, 20];
+﻿var grid = new CellType[50, 20];
 
 const int width = 50;
 const int height = 20;
@@ -111,60 +102,36 @@ grid[outX, outY] = CellType.Exit;
 Console.Clear();
 Console.CursorVisible = false;
 
-Console.SetCursorPosition(0, 0);
-Console.ForegroundColor = InfoColor;
-Console.WriteLine(sHeader);
-Console.ResetColor();
-
+DrawTextXY(0, 0, sHeader, InfoColor);
 for (var y = 0; y < height; y++)
 {
     for (var x = 0; x < width; x++)
     {
-        Console.SetCursorPosition(offsetX + x, offsetY + y);
-        var cell = grid[x, y];
-        if (cell == CellType.Wall)        { Console.ForegroundColor = WallColor    ; Console.Write("█"); }
-        else if (cell == CellType.Player) { Console.ForegroundColor = PlayerColor  ; Console.Write("@"); }
-        else if (cell == CellType.Exit)   { Console.ForegroundColor = ExitColor    ; Console.Write("★"); }
-        else                              { Console.ForegroundColor = CorridorColor; Console.Write("·"); }
+        DrawCell(x, y);
     }
 }
+DrawTextXY(0, offsetY + height, sInstructions, InstructionColor);
 
-Console.SetCursorPosition(0, offsetY + height + 1);
-Console.ForegroundColor = InstructionColor;
-Console.Write(sInstructions);
-Console.ResetColor();
+var mode = State.Playing;
 
-// ── Action locale : redessiner UNE seule cellule via SetCursorPosition ──
-void DrawCell(int cx, int cy)
-{
-    Console.SetCursorPosition(offsetX + cx, offsetY + cy);
-    var cell = grid[cx, cy];
-    if (cell == CellType.Wall)        { Console.ForegroundColor = WallColor    ; Console.Write("█"); }
-    else if (cell == CellType.Player) { Console.ForegroundColor = PlayerColor  ; Console.Write("@"); }
-    else if (cell == CellType.Exit)   { Console.ForegroundColor = ExitColor    ; Console.Write("★"); }
-    else                              { Console.ForegroundColor = CorridorColor; Console.Write("·"); }
-    Console.ResetColor();
-}
-
-// ── Boucle de jeu ──
-var won = false;
-
-while (!won)
+while (mode == State.Playing)
 {
     var key = Console.ReadKey(true).Key;
 
     var nx2 = playerX;
     var ny2 = playerY;
 
-    if      (key == ConsoleKey.Z || key == ConsoleKey.UpArrow)    ny2--;
-    else if (key == ConsoleKey.S || key == ConsoleKey.DownArrow)  ny2++;
-    else if (key == ConsoleKey.Q || key == ConsoleKey.LeftArrow)  nx2--;
-    else if (key == ConsoleKey.D || key == ConsoleKey.RightArrow) nx2++;
-    else if (key == ConsoleKey.Escape) break;
-
+    switch (key)
+    {
+        case ConsoleKey.Z or ConsoleKey.UpArrow:    ny2--; break;
+        case ConsoleKey.S or ConsoleKey.DownArrow:  ny2++; break;
+        case ConsoleKey.Q or ConsoleKey.LeftArrow:  nx2--; break;
+        case ConsoleKey.D or ConsoleKey.RightArrow: nx2++; break;
+        case ConsoleKey.Escape: mode = State.Canceled; break;
+    }
     if (nx2 >= 0 && nx2 < width && ny2 >= 0 && ny2 < height && grid[nx2, ny2] != CellType.Wall)
     {
-        if (grid[nx2, ny2] == CellType.Exit) won = true;
+        if (grid[nx2, ny2] == CellType.Exit) mode = State.Won;
 
         // ✅ Efface l'ancienne position (couloir) → 1 seule case redessinée
         grid[playerX, playerY] = CellType.Corridor;
@@ -178,26 +145,48 @@ while (!won)
     }
 }
 
-// ── Écran de victoire ──
-Console.SetCursorPosition(0, offsetY + height + marginYMessage);
-if (won)
-{
-    Console.ForegroundColor = SuccessColor;
-    Console.WriteLine(sWin);
-    Console.ResetColor();
-}
-else
-{
-    Console.ForegroundColor = DangerColor;
-    Console.WriteLine(sCanceled);
-    Console.ResetColor();
-}
-
-Console.SetCursorPosition(0, offsetY + height + marginYMessage + messageHeight);
-Console.WriteLine(sPressKey);
+DrawTextColorXY(0, offsetY + height + marginYMessage,
+    mode == State.Won 
+    ? (sWin, SuccessColor) 
+    : (sCanceled, DangerColor)
+);
+DrawTextXY(0, offsetY + height + marginYMessage + messageHeight, sPressKey);
 Console.CursorVisible = true;
 Console.ReadKey(true);
 
+
+
+void DrawTextXY(int x, int y, string text, ConsoleColor? color = null)
+{
+    Console.SetCursorPosition(x, y);
+    if(color.HasValue)
+    {
+        Console.ForegroundColor = color.Value;
+    }
+    Console.Write(text);
+    Console.ResetColor();
+}
+
+void DrawTextColorXY(int x, int y, (string text, ConsoleColor color) info) =>
+    DrawTextXY(x, y, info.text, info.color);
+
+void DrawCell(int cx, int cy) => DrawTextColorXY(
+    offsetX + cx, 
+    offsetY + cy,
+    grid[cx, cy] switch
+    {
+        CellType.Wall   => ("█", WallColor),
+        CellType.Player => ("@", PlayerColor),
+        CellType.Exit   => ("★", ExitColor),
+        _               => ("·", CorridorColor)
+    });
+
+enum State
+{
+    Playing,
+    Won,
+    Canceled
+}
 enum CellType
 {
     Corridor = 0,
