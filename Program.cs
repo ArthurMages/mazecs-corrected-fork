@@ -1,5 +1,3 @@
-﻿var grid = new CellType[50, 20];
-
 const int width = 50;
 const int height = 20;
 
@@ -32,6 +30,8 @@ const ConsoleColor WallColor        = ConsoleColor.DarkGray;
 const ConsoleColor CorridorColor    = ConsoleColor.DarkBlue;
 const ConsoleColor PlayerColor      = ConsoleColor.Yellow;
 const ConsoleColor ExitColor        = ConsoleColor.Green;
+
+﻿var grid = new CellType[width, height];
 
 var playerX = 0;
 var playerY = 0;
