@@ -3,40 +3,11 @@ using Epsi.MazeCs;
 
 namespace Epsi.MazeCs;
 
-#region Constants
 const int width = 50;
 const int height = 20;
 
-const int offsetY = 3;
-const int offsetX = 0;
-
-const int marginYMessage = 3;
-const int messageHeight = 5;
-
-const string sHeader = """
-    ╔══════════════════════════════════════════════════╗
-    ║          🏃 LABYRINTHE ASCII  C#  🏃             ║
-    ╚══════════════════════════════════════════════════╝
-    """;
-const string sInstructions = "  [Z/↑] Haut   [S/↓] Bas   [Q/←] Gauche   [D/→] Droite   [Échap] Quitter";
-const string sWin = """
-    ╔════════════════════════════════════════╗
-    ║   🎉  FÉLICITATIONS !  🎉      ║
-    ║   Vous avez trouvé la sortie ! ║
-    ╚════════════════════════════════════════╝
-""";
-const string sCanceled = "\n  Partie abandonnée. À bientôt !";
-const string sPressKey = "  Appuyez sur une key pour quitter...";
-
-const ConsoleColor SuccessColor     = ConsoleColor.Green;
-const ConsoleColor DangerColor      = ConsoleColor.Red;
-const ConsoleColor InfoColor        = ConsoleColor.Cyan;
-const ConsoleColor InstructionColor = ConsoleColor.DarkCyan;
-const ConsoleColor WallColor        = ConsoleColor.DarkGray;
-const ConsoleColor CorridorColor    = ConsoleColor.DarkBlue;
-const ConsoleColor PlayerColor      = ConsoleColor.Yellow;
-const ConsoleColor ExitColor        = ConsoleColor.Green;
-#endregion 
+var screen = new ConsoleScreen();
+var keyboard = new KeyboardController();
 
 var grid = new CellType[width, height];
 
@@ -48,67 +19,36 @@ DrawScreen();
 
 while (mode == State.Playing)
 {
-    var key = Console.ReadKey(true).Key;
-
-    var newPos = playerPos;
-
-    switch (key)
+    var (delta, canceled) = keyboard.ReadInput();
+    if (canceled)
     {
-        case ConsoleKey.Z or ConsoleKey.UpArrow:    newPos = playerPos + Vec2d.Up; break;
-        case ConsoleKey.S or ConsoleKey.DownArrow:  newPos = playerPos + Vec2d.Down; break;
-        case ConsoleKey.Q or ConsoleKey.LeftArrow:  newPos = playerPos + Vec2d.Left; break;
-        case ConsoleKey.D or ConsoleKey.RightArrow: newPos = playerPos + Vec2d.Right; break;
-        case ConsoleKey.Escape: mode = State.Canceled; break;
+        mode = State.Canceled;
+        break;
     }
+
+    var newPos = playerPos + delta;
     if (newPos.InBounds(width, height) && grid[newPos.X, newPos.Y] != CellType.Wall)
     {
         if (grid[newPos.X, newPos.Y] == CellType.Exit) mode = State.Won;
 
         UpdateCell(playerPos, CellType.Corridor);
-        UpdateCell(playerPos = newPos, CellType.Player  );
+        UpdateCell(playerPos = newPos, CellType.Player);
     }
 }
 
-DrawTextColorXY(0, offsetY + height + marginYMessage,
-    mode == State.Won 
-    ? (sWin, SuccessColor) 
-    : (sCanceled, DangerColor)
-);
-DrawTextXY(0, offsetY + height + marginYMessage + messageHeight, sPressKey);
+var endMessage = mode == State.Won ? screen.WinText : screen.CanceledText;
+var endColor = mode == State.Won ? screen.SuccessColor : screen.DangerColor;
+screen.DrawFramedText(0, screen.OffsetY + height + screen.MarginYMessage, endMessage, endColor);
+screen.DrawTextXY(0, screen.OffsetY + height + screen.MarginYMessage + screen.MessageHeight, screen.PressKey);
 Console.CursorVisible = true;
 Console.ReadKey(true);
 
 #region Functions
 
-void DrawTextXY(int x, int y, string text, ConsoleColor? color = null)
-{
-    Console.SetCursorPosition(x, y);
-    if(color.HasValue)
-    {
-        Console.ForegroundColor = color.Value;
-    }
-    Console.Write(text);
-    Console.ResetColor();
-}
-
-void DrawTextColorXY(int x, int y, (string text, ConsoleColor color) info) =>
-    DrawTextXY(x, y, info.text, info.color);
-
-void DrawCell(Vec2d pos) => DrawTextColorXY(
-    offsetX + pos.X, 
-    offsetY + pos.Y,
-    grid[pos.X, pos.Y] switch
-    {
-        CellType.Wall   => ("█", WallColor),
-        CellType.Player => ("@", PlayerColor),
-        CellType.Exit   => ("★", ExitColor),
-        _               => ("·", CorridorColor)
-    });
-
 void UpdateCell(Vec2d pos, CellType type)
 {
     grid[pos.X, pos.Y] = type;
-    DrawCell(pos);
+    screen.DrawCell(pos.X, pos.Y, type);
 }
 
 void DrawScreen()
@@ -116,15 +56,15 @@ void DrawScreen()
     Console.Clear();
     Console.CursorVisible = false;
 
-    DrawTextXY(0, 0, sHeader, InfoColor);
+    screen.DrawFramedText(0, 0, screen.HeaderText, screen.InfoColor);
     for (var y = 0; y < height; y++)
     {
         for (var x = 0; x < width; x++)
         {
-            DrawCell(new Vec2d(x, y));
+            screen.DrawCell(x, y, grid[x, y]);
         }
     }
-    DrawTextXY(0, offsetY + height, sInstructions, InstructionColor);
+    screen.DrawTextXY(0, screen.OffsetY + height, screen.Instructions, screen.InstructionColor);
 }
 
 void GenerateMaze(CellType[,] grid, Vec2d playerStart)
