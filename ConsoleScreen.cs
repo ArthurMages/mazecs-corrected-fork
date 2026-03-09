@@ -85,7 +85,7 @@ namespace Epsi.MazeCs
                 type switch
                 {
                     CellType.Wall   => ("█", WallColor),
-                    CellType.Player => ("@", PlayerColor),
+                    CellType.Start  => ("S", PlayerColor),
                     CellType.Exit   => ("★", ExitColor),
                     _               => ("·", CorridorColor)
                 });

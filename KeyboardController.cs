@@ -2,9 +2,6 @@ namespace Epsi.MazeCs
 {
     public class KeyboardController
     {
-        /// <summary>
-        /// Reads a key from the console and returns a movement delta and a cancellation flag.
-        /// </summary>
         public (Vec2d delta, bool canceled) ReadInput()
         {
             var key = Console.ReadKey(true).Key;
