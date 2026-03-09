@@ -1,3 +1,8 @@
+using System;
+using Epsi.MazeCs;
+
+namespace Epsi.MazeCs;
+
 #region Constants
 const int width = 50;
 const int height = 20;
@@ -15,10 +20,10 @@ const string sHeader = """
     """;
 const string sInstructions = "  [Z/↑] Haut   [S/↓] Bas   [Q/←] Gauche   [D/→] Droite   [Échap] Quitter";
 const string sWin = """
-    ╔════════════════════════════════╗
+    ╔════════════════════════════════════════╗
     ║   🎉  FÉLICITATIONS !  🎉      ║
     ║   Vous avez trouvé la sortie ! ║
-    ╚════════════════════════════════╝
+    ╚════════════════════════════════════════╝
 """;
 const string sCanceled = "\n  Partie abandonnée. À bientôt !";
 const string sPressKey = "  Appuyez sur une key pour quitter...";
@@ -35,34 +40,32 @@ const ConsoleColor ExitColor        = ConsoleColor.Green;
 
 var grid = new CellType[width, height];
 
-var playerX = 0;
-var playerY = 0;
+var playerPos = new Vec2d(0, 0);
 var mode = State.Playing;
 
-GenerateMaze(grid, playerX, playerY);
+GenerateMaze(grid, playerPos);
 DrawScreen();
 
 while (mode == State.Playing)
 {
     var key = Console.ReadKey(true).Key;
 
-    var nx2 = playerX;
-    var ny2 = playerY;
+    var newPos = playerPos;
 
     switch (key)
     {
-        case ConsoleKey.Z or ConsoleKey.UpArrow:    ny2--; break;
-        case ConsoleKey.S or ConsoleKey.DownArrow:  ny2++; break;
-        case ConsoleKey.Q or ConsoleKey.LeftArrow:  nx2--; break;
-        case ConsoleKey.D or ConsoleKey.RightArrow: nx2++; break;
+        case ConsoleKey.Z or ConsoleKey.UpArrow:    newPos = playerPos + Vec2d.Up; break;
+        case ConsoleKey.S or ConsoleKey.DownArrow:  newPos = playerPos + Vec2d.Down; break;
+        case ConsoleKey.Q or ConsoleKey.LeftArrow:  newPos = playerPos + Vec2d.Left; break;
+        case ConsoleKey.D or ConsoleKey.RightArrow: newPos = playerPos + Vec2d.Right; break;
         case ConsoleKey.Escape: mode = State.Canceled; break;
     }
-    if (InBound(nx2, width) && InBound(ny2, height) && grid[nx2, ny2] != CellType.Wall)
+    if (newPos.InBounds(width, height) && grid[newPos.X, newPos.Y] != CellType.Wall)
     {
-        if (grid[nx2, ny2] == CellType.Exit) mode = State.Won;
+        if (grid[newPos.X, newPos.Y] == CellType.Exit) mode = State.Won;
 
-        UpdateCell(playerX      , playerY      , CellType.Corridor);
-        UpdateCell(playerX = nx2, playerY = ny2, CellType.Player  );
+        UpdateCell(playerPos, CellType.Corridor);
+        UpdateCell(playerPos = newPos, CellType.Player  );
     }
 }
 
@@ -91,10 +94,10 @@ void DrawTextXY(int x, int y, string text, ConsoleColor? color = null)
 void DrawTextColorXY(int x, int y, (string text, ConsoleColor color) info) =>
     DrawTextXY(x, y, info.text, info.color);
 
-void DrawCell(int cx, int cy) => DrawTextColorXY(
-    offsetX + cx, 
-    offsetY + cy,
-    grid[cx, cy] switch
+void DrawCell(Vec2d pos) => DrawTextColorXY(
+    offsetX + pos.X, 
+    offsetY + pos.Y,
+    grid[pos.X, pos.Y] switch
     {
         CellType.Wall   => ("█", WallColor),
         CellType.Player => ("@", PlayerColor),
@@ -102,10 +105,10 @@ void DrawCell(int cx, int cy) => DrawTextColorXY(
         _               => ("·", CorridorColor)
     });
 
-void UpdateCell(int cx, int cy, CellType type)
+void UpdateCell(Vec2d pos, CellType type)
 {
-    grid[cx, cy] = type;
-    DrawCell(cx, cy);
+    grid[pos.X, pos.Y] = type;
+    DrawCell(pos);
 }
 
 void DrawScreen()
@@ -118,22 +121,18 @@ void DrawScreen()
     {
         for (var x = 0; x < width; x++)
         {
-            DrawCell(x, y);
+            DrawCell(new Vec2d(x, y));
         }
     }
     DrawTextXY(0, offsetY + height, sInstructions, InstructionColor);
 }
 
-bool InBound(int val, int max) => val >= 0 && val < max;
-
-void GenerateMaze(CellType[,] grid, int playerStartX, int playerStartY)
+void GenerateMaze(CellType[,] grid, Vec2d playerStart)
 {
     for (var y = 0; y < height; y++)
         for (var x = 0; x < width; x++)
             grid[x, y] = CellType.Wall;
 
-    int[] dx = [ 0, 1, 0, -1 ];
-    int[] dy = [ -1, 0, 1, 0 ];
     int[][] orders = [
         [ 0, 1, 2, 3 ], [ 0, 1, 3, 2 ], [ 0, 2, 1, 3 ], [ 0, 2, 3, 1 ], [ 0, 3, 1, 2 ], [ 0, 3, 2, 1 ],
         [ 1, 0, 2, 3 ], [ 1, 0, 3, 2 ], [ 1, 2, 0, 3 ], [ 1, 2, 3, 0 ], [ 1, 3, 0, 2 ], [ 1, 3, 2, 0 ],
@@ -141,46 +140,30 @@ void GenerateMaze(CellType[,] grid, int playerStartX, int playerStartY)
         [ 3, 0, 1, 2 ], [ 3, 0, 2, 1 ], [ 3, 1, 0, 2 ], [ 3, 1, 2, 0 ], [ 3, 2, 0, 1 ], [ 3, 2, 1, 0 ]
     ];
     var rng = new Random();
+    var dirs = Vec2d.Directions;
 
-    GenerateMazeRec(playerStartX, playerStartY);
+    GenerateMazeRec(playerStart);
 
-    var outX = (width  - 1) & ~1;
-    var outY = (height - 1) & ~1;
+    var outPos = new Vec2d((width  - 1) & ~1, (height - 1) & ~1);
 
-    grid[playerStartX, playerStartY] = CellType.Player;
-    grid[outX, outY] = CellType.Exit;
+    grid[playerStart.X, playerStart.Y] = CellType.Player;
+    grid[outPos.X, outPos.Y] = CellType.Exit;
     
-    void GenerateMazeRec(int x, int y)
+    void GenerateMazeRec(Vec2d p)
     {
-        grid[x, y] = CellType.Corridor;
+        grid[p.X, p.Y] = CellType.Corridor;
         foreach (var dir in orders[rng.Next(orders.Length)])
         {
-            if( InMaze(x, dx[dir], width , out var nx) && 
-                InMaze(y, dy[dir], height, out var ny) && 
-                grid[nx, ny] == CellType.Wall)
+            var delta = dirs[dir];
+            var next = p + delta * 2;
+            if (next.InBounds(width, height) && grid[next.X, next.Y] == CellType.Wall)
             {
-                grid[(x + nx) / 2, (y + ny) / 2] = CellType.Corridor;
-                GenerateMazeRec(nx, ny);
+                var between = p + delta;
+                grid[between.X, between.Y] = CellType.Corridor;
+                GenerateMazeRec(next);
             }
         }
-        bool InMaze(int val, int delta, int max, out int next) => 
-            InBound(next = val + delta * 2, max);
     }
 }
 #endregion
 
-#region Enums
-enum State
-{
-    Playing,
-    Won,
-    Canceled
-}
-enum CellType
-{
-    Corridor = 0,
-    Wall = 1,
-    Player = 2,
-    Exit = 3
-}
-#endregion
