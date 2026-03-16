@@ -2,7 +2,7 @@ namespace Epsi.MazeCs
 {
     public class Maze
     {
-        private readonly CellType[,] grid;
+        private readonly Cell[,] grid;
         public int Width { get; }
         public int Height { get; }
         public Vec2d Start { get; }
@@ -16,7 +16,7 @@ namespace Epsi.MazeCs
             Start = new Vec2d(0, 0);
             if (Start.InBounds(Width, Height))
             {
-                grid[Start.X, Start.Y] = CellType.Start;
+                grid[Start.X, Start.Y] = new Room { IsStart = true };
             }
             Exit = FindExit();
         }
@@ -25,15 +25,15 @@ namespace Epsi.MazeCs
         {
             for (int y = 0; y < Height; y++)
                 for (int x = 0; x < Width; x++)
-                    if (grid[x, y] == CellType.Exit)
+                    if (grid[x, y] is Room room && room.IsExit)
                         return new Vec2d(x, y);
             return new Vec2d(0, 0);
         }
 
-        public CellType this[int x, int y] => grid[x, y];
-        public CellType this[Vec2d pos] => grid[pos.X, pos.Y];
+        public Cell this[int x, int y] => grid[x, y];
+        public Cell this[Vec2d pos] => grid[pos.X, pos.Y];
 
-        public bool IsWall(Vec2d pos) => this[pos] == CellType.Wall;
+        public bool IsWall(Vec2d pos) => this[pos].IsWall;
 
         public void Draw(IGridDisplay display)
         {

@@ -77,18 +77,10 @@ namespace Epsi.MazeCs
             DrawTextXY(x, y + 1 + lines.Length, bottom, color);
         }
 
-        public void DrawCell(int cx, int cy, CellType type)
+        public void DrawCell(int cx, int cy, Cell cell)
         {
-            DrawTextColorXY(
-                OffsetX + cx,
-                OffsetY + cy,
-                type switch
-                {
-                    CellType.Wall   => ("█", WallColor),
-                    CellType.Start  => ("S", PlayerColor),
-                    CellType.Exit   => ("★", ExitColor),
-                    _               => ("·", CorridorColor)
-                });
+            var (symbol, color) = cell.GetDisplayInfo(this);
+            DrawTextColorXY(OffsetX + cx, OffsetY + cy, (symbol, color));
         }
     }
 }

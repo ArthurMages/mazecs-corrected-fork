@@ -4,6 +4,6 @@ namespace Epsi.MazeCs
     {
         int Width { get; }
         int Height { get; }
-        CellType[,] Generate();
+        Cell[,] Generate();
     }
 }
