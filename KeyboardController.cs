@@ -21,5 +21,6 @@ namespace Epsi.MazeCs
         public bool IsLeftPressed => Console.KeyAvailable && Console.ReadKey(false).Key is ConsoleKey.Q or ConsoleKey.LeftArrow;
         public bool IsRightPressed => Console.KeyAvailable && Console.ReadKey(false).Key is ConsoleKey.D or ConsoleKey.RightArrow;
         public bool IsEscPressed => Console.KeyAvailable && Console.ReadKey(false).Key == ConsoleKey.Escape;
+        public bool IsPickupPressed => Console.KeyAvailable && Console.ReadKey(false).Key == ConsoleKey.E;
     }
 }

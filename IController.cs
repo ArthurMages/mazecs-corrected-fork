@@ -8,5 +8,6 @@ namespace Epsi.MazeCs
         bool IsLeftPressed { get; }
         bool IsRightPressed { get; }
         bool IsEscPressed { get; }
+        bool IsPickupPressed { get; }
     }
 }

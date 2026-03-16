@@ -12,6 +12,12 @@ var keyboard = new KeyboardController();
 var mazeGen = new MazeGen(width, height, 0.1);
 var maze = new Maze(mazeGen);
 var player = new Player(maze, screen, keyboard);
+player.PointsChanged += points => screen.DrawTextXY(0, 0, $"Points: {points}", screen.SuccessColor);
+player.InventoryChanged += () =>
+{
+    var inventoryText = string.Join(", ", player.Inventory.Select(c => $"{c.GetType().Name} ({c.Points} pts)"));
+    screen.DrawTextXY(0, 1, $"Inventory: {inventoryText}", screen.InfoColor);
+};
 var mode = State.Playing;
 
 maze.Draw(screen);
