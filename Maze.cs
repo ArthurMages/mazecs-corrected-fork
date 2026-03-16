@@ -35,11 +35,11 @@ namespace Epsi.MazeCs
 
         public bool IsWall(Vec2d pos) => this[pos] == CellType.Wall;
 
-        public void Draw(ConsoleScreen screen)
+        public void Draw(IGridDisplay display)
         {
             for (var y = 0; y < Height; y++)
             for (var x = 0; x < Width; x++)
-                screen.DrawCell(x, y, grid[x, y]);
+                display.DrawCell(x, y, grid[x, y]);
         }
     }
 }

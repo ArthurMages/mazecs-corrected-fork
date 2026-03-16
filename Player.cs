@@ -4,13 +4,13 @@ namespace Epsi.MazeCs
     {
         public Vec2d Position { get; private set; }
         private readonly Maze maze;
-        private readonly ConsoleScreen screen;
+        private readonly IGridDisplay display;
         private readonly IController controller;
 
-        public Player(Maze maze, ConsoleScreen screen, IController controller)
+        public Player(Maze maze, IGridDisplay display, IController controller)
         {
             this.maze = maze;
-            this.screen = screen;
+            this.display = display;
             this.controller = controller;
             Position = maze.Start;
             Draw();
@@ -35,7 +35,7 @@ namespace Epsi.MazeCs
                 return false;
             if (maze.IsWall(next))
                 return false;
-            screen.DrawCell(Position.X, Position.Y, maze[Position]);
+            display.DrawCell(Position.X, Position.Y, maze[Position]);
             Position = next;
             Draw();
             if (Position == maze.Exit)
@@ -47,7 +47,7 @@ namespace Epsi.MazeCs
 
         public void Draw()
         {
-            screen.DrawTextXY(screen.OffsetX + Position.X, screen.OffsetY + Position.Y, "@", screen.PlayerColor);
+            display.DrawTextXY(display.OffsetX + Position.X, display.OffsetY + Position.Y, "@", display.PlayerColor);
         }
     }
 }

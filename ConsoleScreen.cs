@@ -1,6 +1,6 @@
 namespace Epsi.MazeCs
 {
-    public class ConsoleScreen
+    public class ConsoleScreen : IGridDisplay
     {
         public int OffsetX { get; }
         public int OffsetY { get; }
