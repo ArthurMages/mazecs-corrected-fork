@@ -7,12 +7,14 @@ namespace Epsi.MazeCs
         public int Width { get; }
         public int Height { get; }
         private readonly double coinProbability;
+        private readonly double doorProbability;
 
-        public MazeGen(int width, int height, double coinProbability = 0.0)
+        public MazeGen(int width, int height, double coinProbability = 0.0, double doorProbability = 0.0)
         {
             Width = width;
             Height = height;
             this.coinProbability = coinProbability;
+            this.doorProbability = doorProbability;
         }
 
         public Cell[,] Generate()
@@ -48,6 +50,22 @@ namespace Epsi.MazeCs
                         var between = p + delta;
                         grid[between.X, between.Y] = new Room();
                         GenerateMazeRec(next);
+                    }
+                }
+
+                // Place key in the room after recursion
+                if (grid[p.X, p.Y] is Room room && !room.IsStart && !room.IsExit && rng.NextDouble() < 0.5) // 50% chance for key on path
+                {
+                    room.Collectable = new Key();
+                }
+
+                // Optionally place a door on adjacent walls
+                foreach (var dir in dirs)
+                {
+                    var wallPos = p + dir;
+                    if (wallPos.InBounds(Width, Height) && grid[wallPos.X, wallPos.Y] is Wall && rng.NextDouble() < doorProbability)
+                    {
+                        grid[wallPos.X, wallPos.Y] = new Door();
                     }
                 }
             }

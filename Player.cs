@@ -63,8 +63,21 @@ namespace Epsi.MazeCs
             var next = Position + delta;
             if (!next.InBounds(maze.Width, maze.Height))
                 return false;
-            if (maze.IsWall(next))
-                return false;
+
+            var cell = maze[next];
+            if (cell.IsWall)
+            {
+                // Check if it's a door and player has the key
+                if (cell is Door door && Inventory.Contains(door.Key))
+                {
+                    // Allow passage
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
             display.DrawCell(Position.X, Position.Y, maze[Position]);
             Position = next;
             Draw();

@@ -9,7 +9,7 @@ const int height = 20;
 var screen = new ConsoleScreen();
 var keyboard = new KeyboardController();
 
-var mazeGen = new MazeGen(width, height, 0.1);
+var mazeGen = new MazeGen(width, height, 0.1, 0.05);
 var maze = new Maze(mazeGen);
 var player = new Player(maze, screen, keyboard);
 player.PointsChanged += points => screen.DrawTextXY(0, 0, $"Points: {points}", screen.SuccessColor);
