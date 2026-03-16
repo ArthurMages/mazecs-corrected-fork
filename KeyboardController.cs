@@ -1,6 +1,6 @@
 namespace Epsi.MazeCs
 {
-    public class KeyboardController
+    public class KeyboardController : IController
     {
         public (Vec2d delta, bool canceled) ReadInput()
         {
@@ -15,5 +15,11 @@ namespace Epsi.MazeCs
                 _                                     => (new Vec2d(0, 0), false),
             };
         }
+
+        public bool IsUpPressed => Console.KeyAvailable && Console.ReadKey(false).Key is ConsoleKey.Z or ConsoleKey.UpArrow;
+        public bool IsDownPressed => Console.KeyAvailable && Console.ReadKey(false).Key is ConsoleKey.S or ConsoleKey.DownArrow;
+        public bool IsLeftPressed => Console.KeyAvailable && Console.ReadKey(false).Key is ConsoleKey.Q or ConsoleKey.LeftArrow;
+        public bool IsRightPressed => Console.KeyAvailable && Console.ReadKey(false).Key is ConsoleKey.D or ConsoleKey.RightArrow;
+        public bool IsEscPressed => Console.KeyAvailable && Console.ReadKey(false).Key == ConsoleKey.Escape;
     }
 }

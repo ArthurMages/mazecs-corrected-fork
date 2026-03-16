@@ -11,7 +11,7 @@ var keyboard = new KeyboardController();
 
 var mazeGen = new MazeGen(width, height);
 var maze = new Maze(mazeGen);
-var player = new Player(maze, screen);
+var player = new Player(maze, screen, keyboard);
 var mode = State.Playing;
 
 maze.Draw(screen);
@@ -19,18 +19,13 @@ player.Draw();
 
 while (mode == State.Playing)
 {
-    var (delta, canceled) = keyboard.ReadInput();
-    if (canceled)
+    if (!player.Update(out var reachedExit))
     {
         mode = State.Canceled;
         break;
     }
-
-    if (player.TryMove(delta, out var reachedExit))
-    {
-        if (reachedExit)
-            mode = State.Won;
-    }
+    if (reachedExit)
+        mode = State.Won;
 }
 
 var endMessage = mode == State.Won ? screen.WinText : screen.CanceledText;

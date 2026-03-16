@@ -8,7 +8,7 @@ namespace Epsi.MazeCs
         public Vec2d Start { get; }
         public Vec2d Exit { get; }
 
-        public Maze(MazeGen generator)
+        public Maze(IMazeGenerator generator)
         {
             Width = generator.Width;
             Height = generator.Height;

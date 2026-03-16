@@ -2,7 +2,7 @@ using System;
 
 namespace Epsi.MazeCs
 {
-    public class MazeGen
+    public class MazeGen : IMazeGenerator
     {
         public int Width { get; }
         public int Height { get; }
