@@ -6,11 +6,13 @@ namespace Epsi.MazeCs
     {
         public int Width { get; }
         public int Height { get; }
+        private readonly double coinProbability;
 
-        public MazeGen(int width, int height)
+        public MazeGen(int width, int height, double coinProbability = 0.0)
         {
             Width = width;
             Height = height;
+            this.coinProbability = coinProbability;
         }
 
         public Cell[,] Generate()
@@ -46,6 +48,18 @@ namespace Epsi.MazeCs
                         var between = p + delta;
                         grid[between.X, between.Y] = new Room();
                         GenerateMazeRec(next);
+                    }
+                }
+            }
+
+            // Add coins to rooms with probability
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    if (grid[x, y] is Room room && !room.IsStart && !room.IsExit && rng.NextDouble() < coinProbability)
+                    {
+                        room.Collectable = new Coin();
                     }
                 }
             }

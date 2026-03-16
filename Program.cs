@@ -9,7 +9,7 @@ const int height = 20;
 var screen = new ConsoleScreen();
 var keyboard = new KeyboardController();
 
-var mazeGen = new MazeGen(width, height);
+var mazeGen = new MazeGen(width, height, 0.1);
 var maze = new Maze(mazeGen);
 var player = new Player(maze, screen, keyboard);
 var mode = State.Playing;

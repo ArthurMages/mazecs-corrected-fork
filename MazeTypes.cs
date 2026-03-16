@@ -23,11 +23,13 @@ namespace Epsi.MazeCs
     {
         public bool IsStart { get; set; }
         public bool IsExit { get; set; }
+        public ICollectable? Collectable { get; set; }
         public override bool IsWall => false;
         public override (string Symbol, ConsoleColor Color) GetDisplayInfo(ConsoleScreen screen)
         {
             if (IsStart) return ("S", screen.PlayerColor);
             if (IsExit) return ("★", screen.ExitColor);
+            if (Collectable != null) return ("¢", screen.InfoColor);
             return ("·", screen.CorridorColor);
         }
     }
