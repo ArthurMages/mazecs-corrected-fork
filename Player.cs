@@ -67,10 +67,11 @@ namespace Epsi.MazeCs
             var cell = maze[next];
             if (cell.IsWall)
             {
-                // Check if it's a door and player has the key
-                if (cell is Door door && Inventory.Contains(door.Key))
+                if (cell is Door)
                 {
-                    // Allow passage
+                    var hasKey = Inventory.Any(item => item is Key);
+                    if (!hasKey)
+                        return false;
                 }
                 else
                 {
